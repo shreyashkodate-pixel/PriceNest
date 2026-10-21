@@ -122,15 +122,17 @@ PriceNest/
   - Established project structure, comprehensive architecture docs, database schemas, and API contracts.
   - Formulated dataset feasibility audit, data dictionary, and cloud deployment runbook.
   - Configured robust `.gitignore` for Python, Node.js, datasets, and ML models.
-- [ ] **Phase 2: Data Ingestion, Feasibility Audit & Exploratory Data Analysis (EDA)**
-  - Local CSV dataset ingestion into `data/raw/pune_housing_raw.csv`.
-  - Execute direct inspection script; populate `DATA_DICTIONARY.md` with verified column names and statistics.
-  - Comprehensive EDA (univariate distributions, correlation analysis, Pune locality frequency, outlier boundaries).
-- [ ] **Phase 3: Feature Engineering, Model Training & Evaluation**
-  - Implement preprocessing pipeline (`StandardScaler`, `OneHotEncoder`, outlier trimmers).
-  - Benchmark regression models (Linear Regression, Random Forest, HistGradientBoosting).
-  - Cross-validation and evaluation metrics report (MAE, RMSE, $R^2$, MAPE).
-  - Serialize production candidate pipeline via `joblib`.
+- [x] **Phase 2: Data Ingestion, Feasibility Audit & Exploratory Data Analysis (EDA)** (Completed)
+  - Ingested local raw dataset and verified 15-column schema, data types, and statistics via `scripts/inspect_dataset.py`.
+  - Filtered and verified the 9.79% Pune subset ($N=7,833$) from the 80,000-row multi-city Kaggle dataset.
+  - Conducted feasibility audit revealing synthetic data patterns (decoupled BHK-area correlation, lack of micro-localities).
+  - Generated SVG visual analytics and published `docs/dataset/PHASE_2_DATASET_AUDIT_REPORT.md`.
+- [x] **Phase 3: Feature Engineering, Model Training & Baseline Evaluation** (Completed)
+  - Implemented zero-leakage scikit-learn `Pipeline` and `ColumnTransformer` (`StandardScaler` + `OneHotEncoder`).
+  - Benchmarked `DummyRegressor` baseline against Ridge, Random Forest, and HistGradientBoosting via 5-fold cross-validation.
+  - Selected `HistGradientBoostingRegressor` (Holdout Test $R^2 = 0.7481$, MAE = ₹32.48 Lakhs, RMSE = ₹52.84 Lakhs).
+  - Executed residual and error analysis across price tiers and locality types; verified 0 negative predictions.
+  - Serialized experimental artifact `ml/models/pricenest_pune_model_v1.0.0_exp.joblib` (git-ignored), verified artifact reload/inference, and published `docs/dataset/PHASE_3_BASELINE_MODEL_REPORT.md`.
 - [ ] **Phase 4: Backend API Implementation (FastAPI + SQLAlchemy + Alembic)**
   - Scaffold FastAPI app, async database session, and Supabase connection pooler.
   - Implement Alembic migrations for `localities`, `prediction_requests`, and `model_registry`.
