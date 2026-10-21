@@ -1,0 +1,174 @@
+{
+  "dataset": {
+    "source": "/Users/apple/Documents/Projects/PriceNest/ml/src/../../data/raw/pune_housing_raw.csv",
+    "filter": "City == 'Pune' and Super_Area_SqFt >= 200",
+    "total_clean_samples": 7819,
+    "train_samples": 6255,
+    "test_samples": 1564
+  },
+  "features": {
+    "numeric": [
+      "Super_Area_SqFt",
+      "BHK",
+      "Bathrooms",
+      "Floor_Number",
+      "Total_Floors",
+      "Age_of_Property",
+      "Distance_to_Metro_km",
+      "Distance_to_City_Center_km",
+      "Parking",
+      "Lift_Available",
+      "Gated_Community"
+    ],
+    "categorical": [
+      "Locality_Type",
+      "Property_Type",
+      "Furnishing_Status"
+    ],
+    "target": "Price_INR_Lakhs"
+  },
+  "cv_results_5fold": {
+    "Dummy (Mean Baseline)": {
+      "cv_mae_mean": 77.31,
+      "cv_mae_std": 1.55,
+      "cv_rmse_mean": 111.2,
+      "cv_rmse_std": 2.75,
+      "cv_r2_mean": -0.0003,
+      "cv_r2_std": 0.0004
+    },
+    "Ridge Linear Regression": {
+      "cv_mae_mean": 33.76,
+      "cv_mae_std": 0.68,
+      "cv_rmse_mean": 62.86,
+      "cv_rmse_std": 3.14,
+      "cv_r2_mean": 0.6804,
+      "cv_r2_std": 0.0198
+    },
+    "HistGradientBoostingRegressor": {
+      "cv_mae_mean": 33.59,
+      "cv_mae_std": 0.24,
+      "cv_rmse_mean": 64.17,
+      "cv_rmse_std": 3.05,
+      "cv_r2_mean": 0.6668,
+      "cv_r2_std": 0.0215
+    },
+    "RandomForestRegressor": {
+      "cv_mae_mean": 33.18,
+      "cv_mae_std": 0.51,
+      "cv_rmse_mean": 63.15,
+      "cv_rmse_std": 2.41,
+      "cv_r2_mean": 0.6774,
+      "cv_r2_std": 0.013
+    }
+  },
+  "holdout_test_results": {
+    "Dummy (Mean Baseline)": {
+      "test_mae_lakhs": 77.88,
+      "test_rmse_lakhs": 105.28,
+      "test_r2": -0.0002
+    },
+    "Ridge Linear Regression": {
+      "test_mae_lakhs": 32.65,
+      "test_rmse_lakhs": 51.37,
+      "test_r2": 0.7619
+    },
+    "HistGradientBoostingRegressor": {
+      "test_mae_lakhs": 32.48,
+      "test_rmse_lakhs": 52.84,
+      "test_r2": 0.7481
+    },
+    "RandomForestRegressor": {
+      "test_mae_lakhs": 32.54,
+      "test_rmse_lakhs": 53.59,
+      "test_r2": 0.7408
+    }
+  },
+  "winning_model": {
+    "name": "HistGradientBoostingRegressor",
+    "artifact_path": "/Users/apple/Documents/Projects/PriceNest/ml/src/../models/pricenest_pune_model_v1.0.0_exp.joblib",
+    "artifact_size_mb": 0.53,
+    "test_metrics": {
+      "test_mae_lakhs": 32.48,
+      "test_rmse_lakhs": 52.84,
+      "test_r2": 0.7481
+    },
+    "price_tier_analysis": {
+      "< \u20b950L (Budget)": {
+        "count": 268,
+        "mae_lakhs": 14.68,
+        "rmse_lakhs": 20.17,
+        "mean_residual_bias": -12.27
+      },
+      "\u20b950L-\u20b9100L (Mid)": {
+        "count": 502,
+        "mae_lakhs": 19.07,
+        "rmse_lakhs": 24.05,
+        "mean_residual_bias": -9.66
+      },
+      "\u20b9100L-\u20b9200L (Premium)": {
+        "count": 473,
+        "mae_lakhs": 30.86,
+        "rmse_lakhs": 42.15,
+        "mean_residual_bias": -5.98
+      },
+      "> \u20b9200L (Luxury)": {
+        "count": 321,
+        "mae_lakhs": 70.68,
+        "rmse_lakhs": 98.7,
+        "mean_residual_bias": 22.81
+      }
+    },
+    "locality_analysis": {
+      "Affordable": {
+        "count": 365,
+        "mae_lakhs": 12.86,
+        "rmse_lakhs": 17.78,
+        "mean_residual_bias": -2.16
+      },
+      "Mid-Range": {
+        "count": 792,
+        "mae_lakhs": 26.72,
+        "rmse_lakhs": 45.15,
+        "mean_residual_bias": -1.24
+      },
+      "Premium": {
+        "count": 407,
+        "mae_lakhs": 61.27,
+        "rmse_lakhs": 80.49,
+        "mean_residual_bias": -4.6
+      }
+    },
+    "property_type_analysis": {
+      "Apartment": {
+        "count": 418,
+        "mae_lakhs": 31.1,
+        "rmse_lakhs": 47.41,
+        "mean_residual_bias": -0.56
+      },
+      "Builder Floor": {
+        "count": 378,
+        "mae_lakhs": 34.31,
+        "rmse_lakhs": 54.74,
+        "mean_residual_bias": -2.01
+      },
+      "Independent House": {
+        "count": 379,
+        "mae_lakhs": 30.06,
+        "rmse_lakhs": 51.61,
+        "mean_residual_bias": 0.07
+      },
+      "Villa": {
+        "count": 389,
+        "mae_lakhs": 34.53,
+        "rmse_lakhs": 57.48,
+        "mean_residual_bias": -6.87
+      }
+    },
+    "implausibility_check": {
+      "min_predicted_price_lakhs": 15.26,
+      "max_predicted_price_lakhs": 640.82,
+      "negative_predictions_count": 0,
+      "is_physically_plausible": true
+    }
+  }
+}
