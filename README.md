@@ -133,11 +133,13 @@ PriceNest/
   - Selected `HistGradientBoostingRegressor` (Holdout Test $R^2 = 0.7481$, MAE = ₹32.48 Lakhs, RMSE = ₹52.84 Lakhs).
   - Executed residual and error analysis across price tiers and locality types; verified 0 negative predictions.
   - Serialized experimental artifact `ml/models/pricenest_pune_model_v1.0.0_exp.joblib` (git-ignored), verified artifact reload/inference, and published `docs/dataset/PHASE_3_BASELINE_MODEL_REPORT.md`.
-- [ ] **Phase 4: Backend API Implementation (FastAPI + SQLAlchemy + Alembic)**
-  - Scaffold FastAPI app, async database session, and Supabase connection pooler.
-  - Implement Alembic migrations for `localities`, `prediction_requests`, and `model_registry`.
-  - Integrate ML inference service loading `.joblib` model at lifespan startup.
-  - Write automated tests (`pytest` + `httpx`) with $\ge 80\%$ test coverage.
+- [x] **Phase 4: Backend API Implementation (FastAPI + SQLAlchemy + Alembic)** (Completed)
+  - Scaffolded asynchronous FastAPI application with modular routers, CORS whitelist, and request correlation IDs.
+  - Implemented Alembic migrations and SQLAlchemy 2.0 models for `users`, `localities`, `model_registry`, `prediction_requests`, `valuation_feedback`, and `saved_valuations`.
+  - Integrated in-process ML inference loading `pricenest_pune_model_v1.0.0_exp.joblib` via lifespan hook ($< 2$ ms latency).
+  - Implemented bcrypt password hashing, PyJWT authentication, and owner-isolated private prediction history.
+  - Created 32 automated tests (`pytest` + `pytest-asyncio` + `httpx`) achieving 89% code coverage with clean Ruff static analysis.
+  - Documented full implementation in [`docs/backend/PHASE_4_BACKEND_IMPLEMENTATION_REPORT.md`](file:///Users/apple/Documents/Projects/PriceNest/docs/backend/PHASE_4_BACKEND_IMPLEMENTATION_REPORT.md) and [`docs/backend/LOCAL_DEVELOPMENT.md`](file:///Users/apple/Documents/Projects/PriceNest/docs/backend/LOCAL_DEVELOPMENT.md).
 - [ ] **Phase 5: Frontend Development (Next.js + TypeScript)**
   - Build responsive UI with Next.js App Router.
   - Implement property valuation calculator, locality dropdown, and currency display.

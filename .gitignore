@@ -122,6 +122,8 @@ ml/models/*.pt
 ml/models/*.pth
 ml/artifacts/*
 !ml/artifacts/.gitkeep
+ml/inference/artifacts/*
+!ml/inference/artifacts/.gitkeep
 !ml/models/.gitkeep
 *.joblib
 *.pkl

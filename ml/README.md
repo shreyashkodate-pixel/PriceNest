@@ -1,80 +1,86 @@
-# PriceNest — Machine Learning & Analytics Subsystem
+# PriceNest — Machine Learning Subsystem (`ml/`)
 
-This directory contains the machine learning pipelines, exploratory data analysis (EDA), feature engineering workflows, training scripts, and serialized model artifacts for PriceNest.
+This directory houses the complete machine learning subsystem for **PriceNest**, strictly decoupled into offline model building (`training/`), production serving (`inference/`), shared pipeline builders (`pipeline/`), and common definitions (`common/`).
 
 ---
 
-## 1. Directory Structure
+## 1. Subsystem Architecture
 
 ```
 ml/
-├── README.md               # ML architecture and operational guide (this file)
-├── notebooks/              # Jupyter notebooks for EDA and experimental modeling
-│   └── .gitkeep
-├── src/                    # Modular Python ML package
+├── training/                      # OFFLINE (experiments + model building)
+│   ├── data/                      # local training data references
+│   ├── scripts/
+│   │   ├── train.py              # Main training entrypoint (SRS FR-07)
+│   │   └── evaluate.py           # Subgroup residual and tier analysis
+│   ├── experiments/              # Logs and notebook artifacts
+│   └── requirements.txt          # Training-only dependencies (matplotlib, seaborn)
+│
+├── inference/                    # PRODUCTION (used by backend/API)
+│   ├── model/
+│   │   ├── loader.py             # Safe artifact resolution and caching (SRS FR-08)
+│   │   └── predictor.py          # predict() execution and physical bounds
+│   ├── services/
+│   │   └── prediction_service.py # High-level pricing, currency conversion, ranges
+│   └── artifacts/                # Serialized production models (.joblib)
+│       └── pricenest_pune_model_v1.0.0_exp.joblib
+│
+├── pipeline/                     # CORE LOGIC (shared orchestration)
 │   ├── __init__.py
-│   ├── validation.py       # Dataset schema and anomaly verification
-│   ├── preprocessing.py    # Cleaning, encoding, and imputation logic
-│   ├── features.py         # Feature engineering transforms
-│   ├── train.py            # Model training & cross-validation pipeline
-│   ├── evaluate.py         # Metrics generation (MAE, RMSE, R2, MAPE)
-│   └── inference.py        # Inference adapter and output validation
-├── reports/                # Evaluation reports, metric dumps, residual plots (Phase 3)
-│   └── .gitkeep
-├── tests/                  # ML test suite (leakage, schema, pipeline tests per SRS 9.2)
+│   └── pipeline.py               # build_preprocessor(), build_pipeline()
+│
+├── common/                       # SHARED CONSTANTS & UTILITIES
 │   ├── __init__.py
-│   ├── test_preprocessing.py
-│   ├── test_training_pipeline.py
-│   └── test_inference.py
-└── models/                 # Serialized production model artifacts (git-ignored)
-    └── .gitkeep
+│   ├── constants.py              # Feature names, categories, disclaimer (Single Source of Truth)
+│   └── utils.py                  # Normalizers, Lakhs/Crore formatters, uncertainty ranges
+│
+└── README.md
 ```
 
+---
+
+## 2. Core Architectural Principles
+
+1. **Single Source of Truth (`ml/common/constants.py`):**
+   - Feature definitions (`NUMERIC_FEATURES`, `CATEGORICAL_FEATURES`) and physical validation thresholds are centralized and imported by both training and inference modules.
+2. **Unified Pipeline Packaging (SRS FR-08):**
+   - The fitted `ColumnTransformer` (StandardScaler + OneHotEncoder) and estimator (`HistGradientBoostingRegressor`) are serialized together in a single pipeline artifact, eliminating training-serving skew.
+3. **Decoupled Serving (`ml/inference/`):**
+   - The inference service is self-contained and does not require offline visualization libraries (`matplotlib`, `seaborn`). The FastAPI backend delegates to `ml.inference.services.prediction_service`.
+4. **Mandatory Synthetic Data Disclaimer:**
+   - Every inference response automatically injects the required algorithmic simulation disclaimer notice.
 
 ---
 
-## 2. Technology Stack & Tools
+## 3. Usage Workflows
 
-- **Core Data Processing:** `pandas`, `numpy`
-- **Visualization & EDA:** `matplotlib`, `seaborn`
-- **Machine Learning Engine:** `scikit-learn`
-- **Serialization & Persistence:** `joblib`
-- **Experiment Tracking / Reports:** JSON metric dumps and Markdown run summaries
+### 3.1 Training a New Model
+To train the baseline regression pipeline on the clean Pune dataset:
+```bash
+python ml/training/scripts/train.py
+```
+This fits the pipeline, evaluates holdout performance, exports metrics to `ml/reports/baseline_metrics.json`, and serializes the winning model to `ml/inference/artifacts/`.
 
----
+### 3.2 Evaluating Subgroup Residuals
+To inspect residual errors across price tiers (Budget, Mid-Range, Premium, Luxury):
+```bash
+python ml/training/scripts/evaluate.py
+```
 
-## 3. Modeling Lifecycle & Methodology
+### 3.3 Running Inference in Code
+```python
+from ml.inference.services.prediction_service import prediction_service
 
-1. **Exploratory Data Analysis (EDA):**
-   - Profile data distributions, missingness patterns, skewness, and cardinality of categorical features (such as Pune localities).
-   - Identify outliers in price and area (e.g., impossible square footage per bedroom, luxury ultra-high-end penthouses vs affordable housing).
-2. **Feature Engineering & Preprocessing:**
-   - Standardize area metrics (carpet area, built-up area, super built-up area).
-   - Micro-market spatial grouping: target encoding, frequency encoding, or one-hot encoding for high-cardinality locality features.
-   - Property age, BHK configuration, bathroom-to-room ratio, and floor level indexation.
-3. **Model Selection & Validation:**
-   - Baseline models: Linear Regression, Ridge/Lasso regularized baselines.
-   - Non-linear ensemble candidates: Random Forest Regressor, Gradient Boosting / HistGradientBoosting.
-   - Validation Strategy: $K$-Fold cross-validation (with stratification by price quintiles or spatial micro-markets to prevent regional data leakage).
-4. **Evaluation Metrics:**
-   - Mean Absolute Error (MAE in INR Lakhs)
-   - Root Mean Squared Error (RMSE in INR Lakhs)
-   - $R^2$ Score (Coefficient of determination)
-   - Mean Absolute Percentage Error (MAPE)
-5. **Model Serialization:**
-   - Pipelines are bundled with the scikit-learn preprocessing pipeline (imputers, scalers, encoders) and the trained estimator into a single atomic `.joblib` file stored in `ml/models/`.
+result = prediction_service.predict_price({
+    "locality_name": "Baner",
+    "total_sqft": 1050.0,
+    "bhk": 2.0,
+    "bathrooms": 2,
+    "property_type": "Apartment",
+    "furnishing": "semi_furnished",
+})
 
----
-
-## 4. Model Hosting & Serving Strategy (Deferred Protocol)
-
-As confirmed in the project technical architecture:
-- **Phase 1 Baseline:** The decision regarding ML model hosting (e.g., embedded directly within the FastAPI backend runtime vs. isolated as an independent microservice / container) is **deferred** until the training and inference pipeline is established and model memory footprint, artifact size, and inference latency are measured.
-- **Embedded Direct Inference Candidate:** If the serialized `scikit-learn` pipeline is compact (< 50MB) and CPU latency is low (< 50ms), loading the model directly into memory within FastAPI using `joblib.load()` on application startup provides optimal operational simplicity and minimal infrastructure cost on Render.
-- **Standalone Serving Candidate:** If the model requires heavy auxiliary dependencies or larger memory thresholds, a dedicated container service will be evaluated.
-
----
-
-## 5. Development Notice: Dataset Realism
-
-All models trained during initial development utilize the Kaggle Pune real estate dataset. As noted in [`data/README.md`](file:///Users/apple/Documents/Projects/PriceNest/data/README.md), this dataset is synthetic/exploratory in nature and does not represent verified real-estate deeds. Model evaluation metrics reflect performance on this dataset distribution and must not be published as real-world market predictions without proper disclaimers.
+print(result["formatted_price"])        # e.g. "₹1.31 Cr"
+print(result["price_range"])             # e.g. "₹1.08 Cr – ₹1.54 Cr"
+print(result["formatted_per_sqft_rate"]) # e.g. "₹12,452 / sq.ft."
+```

@@ -28,11 +28,12 @@ jobs:
 
       - name: Lint with Ruff
         run: |
-          ruff check backend/ ml/ || true
+          ruff check backend/ ml/
 
       - name: Run Backend Tests
         run: |
-          if [ -d backend/tests ]; then pytest backend/tests/ || true; fi
+          pytest backend/tests/ -v
+
 
   frontend-lint-and-typecheck:
     name: Frontend CI (Next.js + TypeScript)

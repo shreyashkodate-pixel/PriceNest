@@ -1,0 +1,27 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",  # line too long
+    "F403",  # star imports
+    "F405",  # name may be undefined from star import
+    "E712",  # comparison to True/False for SQLAlchemy
+]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/alembic/env.py" = ["F401", "E402"]
+"backend/alembic/versions/*" = ["W291", "E501"]
+"backend/app/models/*" = ["F821"]
+"backend/app/models/__init__.py" = ["F401"]
+"backend/app/schemas/__init__.py" = ["F401"]
+"backend/tests/*" = ["F401", "I001", "E402"]
+"ml/src/train_baseline.py" = ["E402", "I001", "E501"]
+"ml/training/scripts/*" = ["E402", "I001", "E501", "F401"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["backend/tests"]
+python_files = ["test_*.py"]
